@@ -1,2 +1,2 @@
-# fb_parser
-Parse Products from Topsale to Facebook Marketplace Products
+# order_parser
+Automatic parsing of product orders
