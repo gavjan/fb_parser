@@ -16,46 +16,108 @@ def load_page(url):
     return page
 
 
-prod = {
-    "id": 0,
-    "link": "",
-    "type": "",
-    "name": "",
-    "brand": "",
-    "size": "",
-    "description": "",
-    "price": 0,
-    "old_price": 0,
-    "pics": []
+def save_xml(xml_str):
+    xml_file = open("result.xml", "w")
+    xml_file.write(xml_str)
+    xml_file.close()
+
+
+def to_xml(json):
+    item_xml = json2xml.Json2xml(json).to_xml()
+    item_xml = re.sub(r'(<\?xml version="1\.0" \?>|</?all>)\n', '', item_xml)
+    item_xml = "\n<item>\n" + item_xml + "\n</item>\n"
+    return item_xml
+
+
+def parse_prod(page_url):
+    prod = {
+        "id": 0,
+        "link": "",
+        "title": "",
+        "brand": "",
+        "size": "",
+        "description": "",
+        "price": "0 AMD",
+        "old_price": "0 AMD",
+        "image_link": "",
+        "additional_image_link": "",
+        "google_product_category": 1604,  # Clothing by default
+        "availability": "in stock",  # in stock by default
+        "condition": "New",  # New condition by default
+
+    }
+    page_soup = load_page(page_url)
+    prod_html = page_soup.find("div", {"class": "details-block"}).div.div.div
+
+    prod["link"] = page_url
+
+    prod["title"] = prod_html.find("li", {"class": "breadcrumb-item active"}).decode_contents()
+
+    prod["id"] = prod_html.find("div", {"class": "product-id"}).decode_contents()
+    prod["id"] = int(re.search(r"\d+", prod["id"]).group())
+
+    prod["brand"] = prod_html.find("div", {"class": "product-brnd-logo"}).img["src"]
+    prod["brand"] = re.search(r"[a-zA-Z-&]+\.(svg|png|jpg)", prod["brand"]).group()
+    prod["brand"] = re.search(r"[a-zA-Z-&]+", prod["brand"]).group().replace("-", " ")
+
+    prod["price"] = prod_html.find("span", {"class": "regular"}).decode_contents()
+    prod["price"] = re.search(r"[0-9,]+", prod["price"]).group().replace(",", "") + " AMD"
+
+    prod["old_price"] = prod_html.find("span", {"class": "old"}).decode_contents()
+    prod["old_price"] = re.search(r"[0-9,]+", prod["old_price"]).group().replace(",", "") + " AMD"
+
+    print(page_url)
+    prod["description"] = prod_html.find("div", {"class": "extra-description"}).decode_contents()
+    prod["description"] = prod["description"].replace("<br/>", "").lower()
+    prod["description"] = re.sub(r'\n<[^>]+>\n', '', prod["description"])
+    prod["description"] = re.sub(r'<[^>]+>', '', prod["description"])
+
+    pic_arr = prod_html.find_all("li", {"class": "slider-thumb"})
+    prod_pics = []
+    for pic in pic_arr:
+        prod_pics.append(pic.img["src"])
+    prod["image_link"] = prod_pics[0]
+
+    for pic in prod_pics[1:-1]:
+        prod["additional_image_link"] += pic + ",\n"
+    prod["additional_image_link"] += prod_pics[-1]
+
+    type_str = prod_html.find("ol", {"class": "breadcrumb"}).find_all("li")[2].a.decode_contents()
+    prod["google_product_category"] = type_map[type_str]
+
+    prod["size"] = prod_html.find("select", {"id": "prodSizeChangeSel"}).option.decode_contents()
+    return prod
+
+
+type_map = {  # https://www.google.com/basepages/producttype/taxonomy-with-ids.en-US.txt
+    "Կոշիկներ": 187,
+    "Շապիկներ": 212,
+    "Ջինսեր": 204,
+    "Հողաթափեր": 187,
+    "Սպորտային համազգեստ": 3598,
+    "Բաճկոններ": 5598,
+    "Լողազգեստ, ներքնազգեստ": 211,
+    "Վերնաշապիկներ եւ սվիտերներ": 212,
+    "Շապիկներ և պոլոներ": 212,
+    "Զգեստներ": 2271,
+    "Վերնաշապիկներ և բլուզներ": 212,
+    "Հագուստ": 212,
+    "Գոտիներ": 169,
+    "Դրամապանակներ": 6551,
+
 }
-page_url = "https://topsale.am/product/karl-imagination-quote-tee/15057//"
-page_soup = load_page(page_url)
-prod_html = page_soup.find("div", {"class": "details-block"}).div.div.div
+prod_links = []
+xml = '<?xml version="1.0" encoding="utf-8"?><rss version="2.0" xmlns:g="http://base.google.com/ns/1.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel>'
+xml_end = '</channel></rss>'
+all_prods = load_html("todo.html")
+all_prods = all_prods.find("dl")
+all_prods = all_prods.find_all("dt")
+for x in all_prods:
+    prod_links.append(x.a["href"])
 
-prod["name"] = prod_html.find("li", {"class": "breadcrumb-item active"}).decode_contents()
+for link in prod_links:
+    prod_json = parse_prod(link)
+    xml += to_xml(prod_json)
 
-prod["id"] = prod_html.find("div", {"class": "product-id"}).decode_contents()
-prod["id"] = int(re.search(r"\d+", prod["id"]).group())
-
-prod["brand"] = prod_html.find("div", {"class": "product-brnd-logo"}).img["src"]
-prod["brand"] = re.search(r"[a-zA-Z-&]+\.(svg|png|jpg)", prod["brand"]).group()
-prod["brand"] = re.search(r"[a-zA-Z-&]+", prod["brand"]).group().replace("-", " ")
-
-prod["price"] = prod_html.find("span", {"class": "regular"}).decode_contents()
-prod["price"] = int(re.search(r"[0-9,]+", prod["price"]).group().replace(",", ""))
-
-prod["old_price"] = prod_html.find("span", {"class": "old"}).decode_contents()
-prod["old_price"] = int(re.search(r"[0-9,]+", prod["old_price"]).group().replace(",", ""))
-
-prod["description"] = prod_html.find("div", {"class": "extra-description"}).p.decode_contents().replace("<br/>", "")
-
-pic_arr = prod_html.find_all("li", {"class": "slider-thumb"})
-prod["pics"] = []
-for pic in pic_arr:
-    prod["pics"].append(pic.img["src"])
-
-prod["type"] = prod_html.find("ol", {"class": "breadcrumb"}).find_all("li")[2].a.decode_contents()
-
-prod["size"] = prod_html.find("select", {"id": "prodSizeChangeSel"}).option.decode_contents()
-
-print(prod)
+xml += xml_end
+save_xml(xml)
