@@ -38,7 +38,7 @@ def parse_prod(page_url):
         "size": "",
         "description": "",
         "price": "0 AMD",
-        "old_price": "0 AMD",
+        "sale_price": "0 AMD",
         "image_link": "",
         "additional_image_link": "",
         "google_product_category": 1604,  # Clothing by default
@@ -61,11 +61,11 @@ def parse_prod(page_url):
     prod["brand"] = re.search(r"[a-zA-Z-&]+\.(svg|png|jpg)", prod["brand"]).group()
     prod["brand"] = re.search(r"[a-zA-Z-&]+", prod["brand"]).group().replace("-", " ")
 
-    prod["price"] = prod_html.find("span", {"class": "regular"}).decode_contents()
+    prod["price"] = prod_html.find("span", {"class": "old"}).decode_contents()
     prod["price"] = re.search(r"[0-9,]+", prod["price"]).group().replace(",", "") + " AMD"
 
-    prod["old_price"] = prod_html.find("span", {"class": "old"}).decode_contents()
-    prod["old_price"] = re.search(r"[0-9,]+", prod["old_price"]).group().replace(",", "") + " AMD"
+    prod["sale_price"] = prod_html.find("span", {"class": "regular"}).decode_contents()
+    prod["sale_price"] = re.search(r"[0-9,]+", prod["sale_price"]).group().replace(",", "") + " AMD"
 
     prod["description"] = prod_html.find("div", {"class": "extra-description"}).decode_contents()
 
@@ -73,7 +73,6 @@ def parse_prod(page_url):
     prod["description"] = re.sub(r'(<li>|• )', '\n• ', prod["description"])
     prod["description"] = re.sub(r'\n<[^>]+>\n', '', prod["description"])
     prod["description"] = re.sub(r'<[^>]+>', '', prod["description"])
-    print(prod["description"])
 
     pic_arr = prod_html.find_all("li", {"class": "slider-thumb"})
     prod_pics = []
@@ -88,7 +87,13 @@ def parse_prod(page_url):
     type_str = prod_html.find("ol", {"class": "breadcrumb"}).find_all("li")[2].a.decode_contents()
     prod["google_product_category"] = type_map[type_str]
 
-    prod["size"] = prod_html.find("select", {"id": "prodSizeChangeSel"}).option.decode_contents()
+    prod_sizes = []
+    for size in prod_html.find("select", {"id": "prodSizeChangeSel"}).find_all("option"):
+        prod_sizes.append(size.decode_contents())
+    prod["size"] = prod_sizes[0]
+    for size in prod_sizes[1:]:
+        prod["size"] += ", " + size
+
     return prod
 
 
