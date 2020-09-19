@@ -46,6 +46,7 @@ def parse_prod(page_url):
         "condition": "New",  # New condition by default
 
     }
+    print(page_url)
     page_soup = load_page(page_url)
     prod_html = page_soup.find("div", {"class": "details-block"}).div.div.div
 
@@ -66,11 +67,13 @@ def parse_prod(page_url):
     prod["old_price"] = prod_html.find("span", {"class": "old"}).decode_contents()
     prod["old_price"] = re.search(r"[0-9,]+", prod["old_price"]).group().replace(",", "") + " AMD"
 
-    print(page_url)
     prod["description"] = prod_html.find("div", {"class": "extra-description"}).decode_contents()
-    prod["description"] = prod["description"].replace("<br/>", "").lower()
+
+    prod["description"] = prod["description"].lower()
+    prod["description"] = re.sub(r'(<li>|• )', '\n• ', prod["description"])
     prod["description"] = re.sub(r'\n<[^>]+>\n', '', prod["description"])
     prod["description"] = re.sub(r'<[^>]+>', '', prod["description"])
+    print(prod["description"])
 
     pic_arr = prod_html.find_all("li", {"class": "slider-thumb"})
     prod_pics = []
