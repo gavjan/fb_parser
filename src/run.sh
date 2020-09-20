@@ -14,7 +14,7 @@ if [ ! -d input ] ; then
 fi
 
 if [ ! -f input/todo.html ] ; then
-  read -p "[ERROR] input folder is empty. Press enter to exit"
+  read -p "[ERROR] todo.html is empty. Press enter to exit"
   exit 1
 fi
 
