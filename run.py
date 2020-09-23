@@ -35,7 +35,7 @@ def load_page(url):
 def save_xml(xml_str):
     if not os.path.exists("output"):
         os.mkdir("output")
-    xml_file = open("output/result.xml", "w")
+    xml_file = open("output/result.xml", "w", encoding="utf-8")
     xml_file.write(xml_str)
     xml_file.close()
 
