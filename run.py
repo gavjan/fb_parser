@@ -5,7 +5,11 @@ import re
 
 
 def load_html(file_name):
-    return soup(open(file_name), "html.parser")
+    file = open(file_name)
+    file_text = file.read()[11:]
+    file_text = re.findall(r">todo</H3>[\s\S]*", file_text)[0]
+    file.close()
+    return soup(file_text, "html.parser")
 
 
 def load_page(url):
@@ -17,7 +21,7 @@ def load_page(url):
 
 
 def save_xml(xml_str):
-    xml_file = open("result.xml", "w")
+    xml_file = open("output/result.xml", "w")
     xml_file.write(xml_str)
     xml_file.close()
 
@@ -117,7 +121,7 @@ type_map = {  # https://www.google.com/basepages/producttype/taxonomy-with-ids.e
 prod_links = []
 xml = '<?xml version="1.0" encoding="utf-8"?><rss version="2.0" xmlns:g="http://base.google.com/ns/1.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel>'
 xml_end = '</channel></rss>'
-all_prods = load_html("todo.html")
+all_prods = load_html("input/todo.html")
 all_prods = all_prods.find("dl")
 all_prods = all_prods.find_all("dt")
 for x in all_prods:

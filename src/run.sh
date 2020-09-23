@@ -24,7 +24,6 @@ fi
 
 rm output/* 2> /dev/null
 
-cat input/todo.html | tr -d '\n' | grep -o ">todo</H3>.*" | cut -c 11- > todo.html
 python3 src/parser.py
 mv result.xml output
 
