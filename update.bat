@@ -1,1 +1,1 @@
-bash src/update.sh
+git pull
