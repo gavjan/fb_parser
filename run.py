@@ -1,10 +1,22 @@
+from __future__ import print_function
+
 from bs4 import BeautifulSoup as soup  # HTML data structure
 from urllib.request import Request, urlopen
 from json2xml import json2xml
 import re
+import os
+import sys
+
+
+def err(*args, **kwargs):
+    print("[ERROR] ", end="", file=sys.stderr)
+    print(*args, file=sys.stderr, **kwargs)
 
 
 def load_html(file_name):
+    if not os.path.exists("input") or not os.path.isfile("input/todo.html"):
+        err("input/todo.html missing")
+        exit(1)
     file = open(file_name)
     file_text = file.read()[11:]
     file_text = re.findall(r">todo</H3>[\s\S]*", file_text)[0]
@@ -21,6 +33,8 @@ def load_page(url):
 
 
 def save_xml(xml_str):
+    if not os.path.exists("output"):
+        os.mkdir("output")
     xml_file = open("output/result.xml", "w")
     xml_file.write(xml_str)
     xml_file.close()
