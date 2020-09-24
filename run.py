@@ -8,15 +8,17 @@ import os
 import sys
 
 
-def err(*args, **kwargs):
+def err_exit(*args, **kwargs):
     print("[ERROR] ", end="", file=sys.stderr)
     print(*args, file=sys.stderr, **kwargs)
+    print("\nPress Enter to exit...", file=sys.stderr)
+    input()
+    exit(1)
 
 
 def load_html(file_name):
     if not os.path.exists("input") or not os.path.isfile("input/todo.html"):
-        err("input/todo.html missing")
-        exit(1)
+        err_exit("input/todo.html missing")
     file = open(file_name)
     file_text = file.read()[11:]
     file_text = re.findall(r">todo</H3>[\s\S]*", file_text)[0]
