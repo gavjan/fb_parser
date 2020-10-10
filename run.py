@@ -43,7 +43,7 @@ def save_xml(xml_str):
 
 
 def to_xml(json):
-    item_xml = json2xml.Json2xml(json).to_xml()
+    item_xml = json2xml.Json2xml(json, attr_type=False).to_xml()
     item_xml = re.sub(r'(<\?xml version="1\.0" \?>|</?all>)\n', '', item_xml)
     item_xml = "\n<item>\n" + item_xml + "\n</item>\n"
     return item_xml
