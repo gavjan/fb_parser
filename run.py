@@ -21,9 +21,11 @@ def load_html(file_name):
         err_exit("input/todo.html missing")
     file = open(file_name)
     file_text = file.read()[11:]
-    file_text = re.findall(r">todo</H3>[\s\S]*", file_text)[0]
+    file_text = re.findall(r">todo</H3>[\s\S]*", file_text)
+    if not file_text:
+        err_exit("todo.html doesn't contain any product links.")
     file.close()
-    return soup(file_text, "html.parser")
+    return soup(file_text[0], "html.parser")
 
 
 def load_page(url):
