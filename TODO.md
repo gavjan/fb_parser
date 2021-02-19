@@ -1,2 +1,3 @@
 - [ ] Fix Pre-orders
-- [ ] Fix JS not executing
+- [X] Fix JS not executing
+- [ ] Colors

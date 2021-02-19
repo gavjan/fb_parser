@@ -93,9 +93,14 @@ def load_html(file_name):
 
 
 def load_page(url):
-    url = quote(url)
-    secure = "s" if "https://" in url else ""
-    url = re.sub(r"https?%3A//", f"http{secure}://", url)
+    def is_ascii(s):
+        return all(ord(c) < 128 for c in s)
+
+    if not is_ascii(url):
+        for x in url:
+            if not is_ascii(x):
+                url = url.replace(x, quote(x))
+
     req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     web_byte = urlopen(req).read()
     webpage = web_byte.decode('utf-8')
@@ -148,9 +153,13 @@ def parse_prod(page_url, prod):
     prod["id"] = prod_html.find("div", {"class": "product-id"}).decode_contents()
     prod["id"] = int(re.search(r"\d+", prod["id"]).group())
 
-    prod["brand"] = prod_html.find("div", {"class": "product-brnd-logo"}).img["src"]
-    prod["brand"] = re.search(r"[a-zA-Z-&]+\.(svg|png|jpg)", prod["brand"]).group()
-    prod["brand"] = re.search(r"[a-zA-Z-&]+", prod["brand"]).group().replace("-", " ")
+    brand = prod_html.find("div", {"class": "product-brnd-logo"}).img["src"]
+    brand = re.search(r"[a-zA-Z-&]+\.(svg|png|jpg)", brand)
+    if brand:
+        brand = brand.group()
+        prod["brand"] = re.search(r"[a-zA-Z-&]+", brand).group().replace("-", " ")
+    else:
+        prod["brand"] = ""
 
     price_block = prod_html.find("span", {"class": "old"})
     prod["price"] = price_block.decode_contents() if price_block else "0"
@@ -313,7 +322,7 @@ def update_with_website(db):
     categories = categories.find_all("li", {"class": ["swiper-slide", "item menu-element"]})[:-1]
 
     # TODO: DELETE ME
-    categories = categories[:1]
+    categories = categories[2:4]
 
     scraped_sizes = {}
     for cat in categories:
