@@ -1,4 +1,4 @@
-- [ ] Fix Sub Category names
+- [X] Fix Sub Category names
 - [ ] Fix Pre-orders
 - [ ] log
 - [X] Fix 0 AMD

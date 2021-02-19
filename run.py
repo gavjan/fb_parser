@@ -195,14 +195,11 @@ def parse_prod(job):
         prod["additional_image_link"] += pic + ",\n"
     prod["additional_image_link"] += prod_pics[-1]
 
-    type_str = prod_html.find("ol", {"class": "breadcrumb"}).find_all("li")[2].a.decode_contents()
-    prod["google_product_category"] = type_str
+    bread_crumps = prod_html.find("ol", {"class": "breadcrumb"}).find_all("li")
+    sub_type_str = bread_crumps[2].a.decode_contents().strip()
+    type_str = bread_crumps[1].a.decode_contents().strip()
+    prod["google_product_category"] = f"{type_str} {sub_type_str}" if type_str != "Աքսեսուարներ" else sub_type_str
 
-    # prod_sizes = []
-    # for size in prod_html.find("select", {"id": "prodSizeChangeSel"}).find_all("option"):
-    #     prod_sizes.append(size.decode_contents())
-    # prod_sizes.sort()
-    # prod["size"] = prod_sizes
 
 
 def load_links_from_todo():
