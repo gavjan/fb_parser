@@ -8,6 +8,7 @@ import re
 import os
 import sys
 import json
+from async_get import async_get
 
 # Enum states
 DEL = 0
@@ -141,9 +142,11 @@ def item_to_xml(_json):
     return item_xml
 
 
-def parse_prod(page_url, prod):
+def parse_prod(job):
+    page_url, html, prod = job['url'], job['data'], job['prod']
+
     print(page_url)
-    page_soup = load_page(page_url)
+    page_soup = soup(html, "html.parser")
     prod_html = page_soup.find("div", {"class": "details-block"}).div.div.div
 
     prod["link"] = page_url
@@ -206,12 +209,19 @@ def load_links_from_todo():
 
 
 def process_prods(db):
+    jobs = []
     for prod_id in list(db):
         if prod_id != "img_hash":
             if db[prod_id]['state'] == DEL:
                 del db[prod_id]
             elif db[prod_id]['state'] != OK:
-                parse_prod(db[prod_id]['link'], db[prod_id])
+                jobs.append({
+                    'url': db[prod_id]['link'],
+                    'prod': db[prod_id]
+                })
+
+    async_get(jobs, parse_prod)
+    # parse_prod(db[prod_id]['link'], db[prod_id])
 
 
 def scrape_sizes(link):
@@ -263,6 +273,12 @@ def arrays_are_equal(arr1, arr2):
 
 
 def exec_size(db, job, size=None, comma=False):
+    def add_size(sizes, _prod_id, _size):
+        if _prod_id not in sizes:
+            sizes[_prod_id] = []
+        if _size not in sizes[_prod_id]:
+            sizes[_prod_id].append(_size)
+
     print(f"{size if size is not None else ''}{', ' if comma else ''}", end="")
     link = job['link']
     if size is not None:
@@ -280,14 +296,12 @@ def exec_size(db, job, size=None, comma=False):
         prod_link = re.sub(r"[\n\r]", "", prod_link)
         prod_id = re.search(r"/\d+/", prod_link)[0].replace("/", "")
 
+        parent_id = prod_id if img_hash not in db['img_hash'] else db['img_hash'][img_hash]
+        add_size(scraped_sizes, parent_id, size)
         if img_hash not in db['img_hash']:
             new_product(db, img_hash, prod_link, prod_id)
         elif db[db['img_hash'][img_hash]]['state'] != NEW:
             parent_id = db['img_hash'][img_hash]
-            if parent_id not in scraped_sizes:
-                scraped_sizes[parent_id] = []
-            if size not in scraped_sizes[parent_id]:
-                scraped_sizes[parent_id].append(size)
 
             if arrays_are_equal(scraped_sizes[parent_id], db[parent_id]['size']):
                 db[parent_id]['state'] = OK
@@ -321,7 +335,7 @@ def update_with_website(db):
     categories = categories.find_all("li", {"class": ["swiper-slide", "item menu-element"]})[:-1]
 
     # TODO: DELETE ME
-    categories = categories[2:4]
+    # categories = categories[2:3]
 
     scraped_sizes = {}
     for cat in categories:
@@ -340,6 +354,7 @@ def update_with_website(db):
 
             exec_sub_cat(db, job)
 
+    print_json(scraped_sizes)
     for prod_id in scraped_sizes:
         db[prod_id]['size'] = scraped_sizes[prod_id]
 
