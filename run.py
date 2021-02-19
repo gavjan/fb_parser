@@ -132,9 +132,10 @@ def item_to_xml(_json):
         return re.sub(r"['\[\]]", "", f"{arr}")
 
     copy = _json.copy()
-    if "size" not in copy:
-        print_json(copy)
-    copy["size"] = arr_to_string(copy["size"])
+    if None in copy["size"]:
+        del copy["size"]
+    else:
+        copy["size"] = arr_to_string(copy["size"])
 
     item_xml = json2xml.Json2xml(copy, attr_type=False).to_xml()
     item_xml = re.sub(r'(<\?xml version="1\.0" \?>|</?all>)\n', '', item_xml)
@@ -221,7 +222,6 @@ def process_prods(db):
                 })
 
     async_get(jobs, parse_prod)
-    # parse_prod(db[prod_id]['link'], db[prod_id])
 
 
 def scrape_sizes(link):
@@ -354,7 +354,6 @@ def update_with_website(db):
 
             exec_sub_cat(db, job)
 
-    print_json(scraped_sizes)
     for prod_id in scraped_sizes:
         db[prod_id]['size'] = scraped_sizes[prod_id]
 

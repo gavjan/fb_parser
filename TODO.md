@@ -1,3 +1,5 @@
+- [ ] Fix 0 AMD
 - [ ] Fix Pre-orders
+- [ ] log
 - [X] Fix JS not executing
 - [X] Colors
