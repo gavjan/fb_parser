@@ -1,5 +1,8 @@
-- [ ] Fix 0 AMD
+- [ ] Fix Sub Category names
 - [ ] Fix Pre-orders
 - [ ] log
+- [X] Fix 0 AMD
+- [X] Fix no brand
+- [X] Fix Empty description
 - [X] Fix JS not executing
 - [X] Colors

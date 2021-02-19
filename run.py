@@ -112,7 +112,7 @@ def load_page(url):
 def save_xml(xml_str):
     if not os.path.exists("output"):
         os.mkdir("output")
-    xml_file = open("output/result.xml", "w", encoding="utf-8")
+    xml_file = open("output/db.xml", "w", encoding="utf-8")
     xml_file.write(xml_str)
     xml_file.close()
 
@@ -136,6 +136,10 @@ def item_to_xml(_json):
         del copy["size"]
     else:
         copy["size"] = arr_to_string(copy["size"])
+
+    if copy["price"] == "0 AMD":
+        copy["price"] = copy["sale_price"]
+        del copy["sale_price"]
 
     item_xml = json2xml.Json2xml(copy, attr_type=False).to_xml()
     item_xml = re.sub(r'(<\?xml version="1\.0" \?>|</?all>)\n', '', item_xml)
@@ -163,7 +167,7 @@ def parse_prod(job):
         brand = brand.group()
         prod["brand"] = re.search(r"[a-zA-Z-&]+", brand).group().replace("-", " ")
     else:
-        prod["brand"] = ""
+        prod["brand"] = "no_brand"
 
     price_block = prod_html.find("span", {"class": "old"})
     prod["price"] = price_block.decode_contents() if price_block else "0"
@@ -178,6 +182,8 @@ def parse_prod(job):
     prod["description"] = re.sub(r'(<li>|• )', '\n• ', prod["description"])
     prod["description"] = re.sub(r'\n<[^>]+>\n', '', prod["description"])
     prod["description"] = re.sub(r'<[^>]+>', '', prod["description"])
+    if prod["description"] == "":
+        prod["description"] = "No Description"
 
     pic_arr = prod_html.find_all("li", {"class": "slider-thumb"})
     prod_pics = []
