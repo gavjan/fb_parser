@@ -1,1 +1,2 @@
 - [ ] Fix Pre-orders
+- [ ] Fix JS not executing

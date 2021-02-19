@@ -2,6 +2,7 @@ from __future__ import print_function
 
 from bs4 import BeautifulSoup as soup  # HTML data structure
 from urllib.request import Request, urlopen
+from urllib.parse import quote
 from json2xml import json2xml
 import re
 import os
@@ -92,6 +93,9 @@ def load_html(file_name):
 
 
 def load_page(url):
+    url = quote(url)
+    secure = "s" if "https://" in url else ""
+    url = re.sub(r"https?%3A//", f"http{secure}://", url)
     req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     web_byte = urlopen(req).read()
     webpage = web_byte.decode('utf-8')
@@ -111,7 +115,8 @@ def to_xml(db):
     xml = '<?xml version="1.0" encoding="utf-8"?><rss version="2.0" xmlns:g="http://base.google.com/ns/1.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel>'
     xml_end = '</channel></rss>'
     for _id in db:
-        xml += item_to_xml(db[_id])
+        if _id != "img_hash":
+            xml += item_to_xml(db[_id])
     xml += xml_end
     return xml
 
@@ -121,6 +126,8 @@ def item_to_xml(_json):
         return re.sub(r"['\[\]]", "", f"{arr}")
 
     copy = _json.copy()
+    if "size" not in copy:
+        print_json(copy)
     copy["size"] = arr_to_string(copy["size"])
 
     item_xml = json2xml.Json2xml(copy, attr_type=False).to_xml()
@@ -145,7 +152,8 @@ def parse_prod(page_url, prod):
     prod["brand"] = re.search(r"[a-zA-Z-&]+\.(svg|png|jpg)", prod["brand"]).group()
     prod["brand"] = re.search(r"[a-zA-Z-&]+", prod["brand"]).group().replace("-", " ")
 
-    prod["price"] = prod_html.find("span", {"class": "old"}).decode_contents()
+    price_block = prod_html.find("span", {"class": "old"})
+    prod["price"] = price_block.decode_contents() if price_block else "0"
     prod["price"] = re.search(r"[0-9,]+", prod["price"]).group().replace(",", "") + " AMD"
 
     prod["sale_price"] = prod_html.find("span", {"class": "regular"}).decode_contents()
@@ -190,14 +198,12 @@ def load_links_from_todo():
 
 
 def process_prods(db):
-    for prod_id in db:
+    for prod_id in list(db):
         if prod_id != "img_hash":
             if db[prod_id]['state'] == DEL:
                 del db[prod_id]
             elif db[prod_id]['state'] != OK:
                 parse_prod(db[prod_id]['link'], db[prod_id])
-
-    save_xml(to_xml(db))
 
 
 def scrape_sizes(link):
@@ -248,18 +254,22 @@ def arrays_are_equal(arr1, arr2):
     return arr1 == arr2
 
 
-def exec_size(db, job, size, comma=False):
-    print(f"{size}{', ' if comma else ''}", end="")
-    link, tag = job['link'], job['tag']
-    page = load_page(f"{link}?search=filters&searchData_TAG_{tag}={size.replace(' ', '%20')}")
+def exec_size(db, job, size=None, comma=False):
+    print(f"{size if size is not None else ''}{', ' if comma else ''}", end="")
+    link = job['link']
+    if size is not None:
+        link = f"{link}?search=filters&searchData_TAG_{job['tag']}={size.replace(' ', '%20')}"
+
+    page = load_page(link)
     page = page.find("div", {"class": "row"})
     list_items = page.find_all("div", {"class": "listitem"})
 
-    scraped_sizes = {}
+    scraped_sizes = job['scraped_sizes']
     for list_item in list_items:
         img_link = list_item.find("img", {"class": "img-1"})["data-src"]
         img_hash = link_to_hash(img_link)
         prod_link = list_item.find("a", {"class": "prod-item-img"})['href']
+        prod_link = re.sub(r"[\n\r]", "", prod_link)
         prod_id = re.search(r"/\d+/", prod_link)[0].replace("/", "")
 
         if img_hash not in db['img_hash']:
@@ -268,7 +278,8 @@ def exec_size(db, job, size, comma=False):
             parent_id = db['img_hash'][img_hash]
             if parent_id not in scraped_sizes:
                 scraped_sizes[parent_id] = []
-            scraped_sizes[parent_id].append(size)
+            if size not in scraped_sizes[parent_id]:
+                scraped_sizes[parent_id].append(size)
 
             if arrays_are_equal(scraped_sizes[parent_id], db[parent_id]['size']):
                 db[parent_id]['state'] = OK
@@ -279,29 +290,32 @@ def exec_size(db, job, size, comma=False):
 def exec_sub_cat(db, job):
     print("\t", job['sub_category'], end=": ")
 
-    sizes, job["tag"] = scrape_sizes(job["link"])
-    for prod_id in db:
-        if db[prod_id] != "img_hash":
-            db[prod_id]['state'] = DEL
-    i = 0
-    for size in sizes:
-        exec_size(db, job, size, comma=i < len(sizes) - 1)
-        i += 1
+    no_size = ["Pens", "Ժամացույցներ", "Դրամապանակներ", "Արեւային ակնոցներ"]
+    if job['sub_category'] in no_size:
+        exec_size(db, job)
+    else:
+        sizes, job["tag"] = scrape_sizes(job["link"])
+        i = 0
+        for size in sizes:
+            exec_size(db, job, size, comma=i < len(sizes) - 1)
+            i += 1
     print("")
 
 
-def update():
-    pass
-    # Correctly Delete products with del or new state
-
-    # Add products with new state
-
-
 def update_with_website(db):
+    for prod_id in db:
+        if prod_id != "img_hash":
+            db[prod_id]['state'] = DEL
+
     home = load_page("https://topsale.am/")
 
     categories = home.find("div", {"class": "categorylist"}).ul
     categories = categories.find_all("li", {"class": ["swiper-slide", "item menu-element"]})[:-1]
+
+    # TODO: DELETE ME
+    categories = categories[:1]
+
+    scraped_sizes = {}
     for cat in categories:
         main_cat_name = cat.a.decode_contents().strip()
         sub_cats = cat.div.ul.find_all("li", {})
@@ -311,20 +325,24 @@ def update_with_website(db):
             job = {
                 "main_category": main_cat_name,
                 "sub_category": sub_cat.a.decode_contents().strip(),
-                "link": sub_cat.a["href"]
+                "link": sub_cat.a["href"],
+                "scraped_sizes": scraped_sizes
             }
             job['sub_cat_id'] = int(re.search(r"\d+/$", job['link']).group()[:-1])
 
             exec_sub_cat(db, job)
+    print_json(scraped_sizes)
 
 
 def start():
     db = load_json("db")
 
     update_with_website(db)
-    process_prods(db)
-    print_json(db)
     save_json("db", db)
+    process_prods(db)
+
+    save_json("db", db)
+    save_xml(to_xml(db))
 
 
 start()
