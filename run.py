@@ -188,12 +188,11 @@ def parse_prod(page_url, prod):
     type_str = prod_html.find("ol", {"class": "breadcrumb"}).find_all("li")[2].a.decode_contents()
     prod["google_product_category"] = type_str
 
-    prod_sizes = []
-    for size in prod_html.find("select", {"id": "prodSizeChangeSel"}).find_all("option"):
-        prod_sizes.append(size.decode_contents())
-
-    prod_sizes.sort()
-    prod["size"] = prod_sizes
+    # prod_sizes = []
+    # for size in prod_html.find("select", {"id": "prodSizeChangeSel"}).find_all("option"):
+    #     prod_sizes.append(size.decode_contents())
+    # prod_sizes.sort()
+    # prod["size"] = prod_sizes
 
 
 def load_links_from_todo():
@@ -340,18 +339,19 @@ def update_with_website(db):
             job['sub_cat_id'] = int(re.search(r"\d+/$", job['link']).group()[:-1])
 
             exec_sub_cat(db, job)
-    print_json(scraped_sizes)
+
+    for prod_id in scraped_sizes:
+        db[prod_id]['size'] = scraped_sizes[prod_id]
 
 
-def start():
+def main():
     db = load_json("db")
 
     update_with_website(db)
-    save_json("db", db)
     process_prods(db)
 
     save_json("db", db)
     save_xml(to_xml(db))
 
 
-start()
+main()
