@@ -5,6 +5,7 @@ git pull
 if python3 run.py >.log_file 2>.err_file ; then
   mkdir -p ".log/$(date +%d-%m-%Y)"
   cp .log_file ".log/$(date +%d-%m-%Y)/$(date +%H-%M).log"
+  scp output/db.xml mim:~/public_html/.topsale
 else
   mkdir -p ".err/$(date +%d-%m-%Y)"
   cat .err_file >> .log_file
