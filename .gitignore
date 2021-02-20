@@ -138,4 +138,8 @@ fb_parser.rar
 README.txt
 .json/
 .log
+.log_file
 .err
+.err_file
+cron/token.txt
+cron/mail
