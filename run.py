@@ -361,6 +361,7 @@ def update_with_website(db):
 
 
 def main():
+    ]
     db = load_json("db")
 
     update_with_website(db)
