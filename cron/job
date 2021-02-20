@@ -1,1 +1,1 @@
-*/1 * * * * [whereis bash] [script location]
+*/4 * * * * /data/data/com.termux/files/usr/bin/bash /data/data/com.termux/files/home/fb_parser/cron/sync.sh
