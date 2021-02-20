@@ -1,5 +1,5 @@
 - [ ] Fix Pre-orders
-- [ ] Bash Script
+- [X] Bash Script
 - [X] Fix Sub Category names
 - [X] Fix 0 AMD
 - [X] Fix no brand
