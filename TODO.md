@@ -1,6 +1,6 @@
-- [X] Fix Sub Category names
 - [ ] Fix Pre-orders
-- [ ] log
+- [ ] Bash Script
+- [X] Fix Sub Category names
 - [X] Fix 0 AMD
 - [X] Fix no brand
 - [X] Fix Empty description
