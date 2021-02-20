@@ -1,4 +1,4 @@
-cd .. # [Project Directory]
+cd /data/data/com.termux/files/home/fb_parser # [Project Directory]
 
 git pull
 
