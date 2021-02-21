@@ -1,4 +1,6 @@
 - [ ] Fix Pre-orders
+- [ ] Fix Prices Update
+- [ ] Fix A|X
 - [X] Bash Script
 - [X] Fix Sub Category names
 - [X] Fix 0 AMD
