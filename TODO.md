@@ -1,3 +1,4 @@
+- [ ] Fix Parent size being removed
 - [ ] Fix Pre-orders
 - [ ] Fix Prices Update
 - [ ] Fix A|X
