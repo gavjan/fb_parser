@@ -2,6 +2,11 @@ cd /data/data/com.termux/files/home/fb_parser # [Project Directory]
 
 git pull
 
+if curl https://students.mimuw.edu.pl/\~gc401929/.topsale/signal | grep FLUSH_DB; then
+  rm .json/db.json;
+  ssh mim "rm -f ~/public_html/.topsale/signal"
+fi
+
 if python3 run.py >.log_file 2>.err_file ; then
   mkdir -p ".log/$(date +%d-%m-%Y)"
   cp .log_file ".log/$(date +%d-%m-%Y)/$(date +%H-%M).log"
