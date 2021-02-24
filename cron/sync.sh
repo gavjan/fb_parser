@@ -9,15 +9,23 @@ fi
 
 if python3 run.py >.log_file 2>.err_file ; then
   mkdir -p ".log/$(date +%d-%m-%Y)"
-  cp .log_file ".log/$(date +%d-%m-%Y)/$(date +%H-%M).log"
+
+  if [ -s .log_file ]; then
+    ssh mim "mkdir -p ~/public_html/.topsale/log/$(date +%d-%m-%Y)"
+    cp .log_file ".log/$(date +%d-%m-%Y)/$(date +%H-%M).log"
+    scp .log_file mim:~/public_html/.topsale/log/"$(date +%d-%m-%Y)/$(date +%H-%M).log"
+  fi
   scp output/db.xml mim:~/public_html/.topsale
+
+
 else
   mkdir -p ".err/$(date +%d-%m-%Y)"
   cat .err_file >> .log_file
   cp .log_file .err_file
-  cp .err_file ".err/$(date +%d-%m-%Y)/$(date +%H-%M).err"
-  cp .log_file ".log/$(date +%d-%m-%Y)/$(date +%H-%M).log"
 
+  ssh mim "mkdir -p ~/public_html/.topsale/err/$(date +%d-%m-%Y)"
+  cp.err_file ".err/$(date +%d-%m-%Y)/$(date +%H-%M).err"
+  scp.err_file mim:~/public_html/.topsale/err/"$(date +%d-%m-%Y)/$(date +%H-%M).err"
 
   sed -i "s/\"/'/g" .err_file
   curl "https://api.postmarkapp.com/email" \

@@ -1,3 +1,4 @@
+
 from __future__ import print_function
 
 from bs4 import BeautifulSoup as soup  # HTML data structure
@@ -9,6 +10,7 @@ import os
 import sys
 import json
 from async_get import async_get
+DEBUG = False
 
 # Enum states
 DEL = 0
@@ -40,6 +42,11 @@ def save_json(name, data):
     f = open(f'.json/{name}.json', 'w')
     json.dump(data, f)
     f.close()
+
+
+def dprint(*args, **kwargs):
+    if DEBUG:
+        print(*args, **kwargs)
 
 
 def err_exit(*args, **kwargs):
@@ -281,7 +288,7 @@ def exec_size(db, job, size=None, comma=False):
         if _size not in sizes[_prod_id]:
             sizes[_prod_id].append(_size)
 
-    print(f"{size if size is not None else ''}{', ' if comma else ''}", end="")
+    dprint(f"{size if size is not None else ''}{', ' if comma else ''}", end="")
     link = job['link']
     if size is not None:
         link = f"{link}?search=filters&searchData_TAG_{job['tag']}={size.replace(' ', '%20')}"
@@ -312,7 +319,7 @@ def exec_size(db, job, size=None, comma=False):
 
 
 def exec_sub_cat(db, job):
-    print("\t", job['sub_category'], end=": ")
+    dprint("\t", job['sub_category'], end=": ")
 
     no_size = ["Pens", "Ժամացույցներ", "Դրամապանակներ", "Արեւային ակնոցներ"]
     if job['sub_category'] in no_size:
@@ -323,7 +330,7 @@ def exec_sub_cat(db, job):
         for size in sizes:
             exec_size(db, job, size, comma=i < len(sizes) - 1)
             i += 1
-    print("")
+    dprint("")
 
 
 def update_with_website(db):
@@ -344,7 +351,7 @@ def update_with_website(db):
         main_cat_name = cat.a.decode_contents().strip()
         sub_cats = cat.div.ul.find_all("li", {})
 
-        print(main_cat_name)
+        dprint(main_cat_name)
         for sub_cat in sub_cats:
             job = {
                 "main_category": main_cat_name,
