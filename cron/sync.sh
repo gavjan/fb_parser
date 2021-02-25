@@ -24,8 +24,8 @@ else
   cp .log_file .err_file
 
   ssh mim "mkdir -p ~/public_html/.topsale/err/$(date +%d-%m-%Y)"
-  cp.err_file ".err/$(date +%d-%m-%Y)/$(date +%H-%M).err"
-  scp.err_file mim:~/public_html/.topsale/err/"$(date +%d-%m-%Y)/$(date +%H-%M).err"
+  cp .err_file ".err/$(date +%d-%m-%Y)/$(date +%H-%M).err"
+  scp .err_file mim:~/public_html/.topsale/err/"$(date +%d-%m-%Y)/$(date +%H-%M).err"
 
   sed -i "s/\"/'/g" .err_file
   curl "https://api.postmarkapp.com/email" \
