@@ -9,6 +9,7 @@ import os
 import sys
 import json
 from async_get import async_get
+
 DEBUG = False
 
 # Enum states
@@ -146,6 +147,7 @@ def item_to_xml(_json):
     if copy["price"] == "0 AMD":
         copy["price"] = copy["sale_price"]
         del copy["sale_price"]
+    copy['description'] += f"\nՉապսեր {copy['size']}"
 
     item_xml = json2xml.Json2xml(copy, attr_type=False).to_xml()
     item_xml = re.sub(r'(<\?xml version="1\.0" \?>|</?all>)\n', '', item_xml)
@@ -161,7 +163,7 @@ def parse_prod(job):
     prod_html = page_soup.find("div", {"class": "details-block"})
 
     if not prod_html:
-        assert(prod['children'] != [])
+        assert (prod['children'] != [])
         del img_hash[prod['img_hash']]
 
         new_parent = prod["children"].pop()
@@ -348,7 +350,6 @@ def exec_size(db, job, size=None, comma=False):
                     db[parent_id]['state'] = OK
                 else:
                     db[parent_id]['state'] = UPDATE
-
 
 
 def exec_sub_cat(db, job):

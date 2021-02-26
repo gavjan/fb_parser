@@ -1,3 +1,4 @@
+- [X] Fix Sizes on phones
 - [ ] Fix Pre-orders
 - [X] Fix Prices Update
 - [X] Fix A|X
