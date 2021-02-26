@@ -1,7 +1,7 @@
-- [ ] Fix Parent size being removed
 - [ ] Fix Pre-orders
 - [ ] Fix Prices Update
 - [ ] Fix A|X
+- [X] Fix Parent size being removed
 - [X] Bash Script
 - [X] Fix Sub Category names
 - [X] Fix 0 AMD

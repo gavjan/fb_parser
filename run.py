@@ -1,4 +1,3 @@
-
 from __future__ import print_function
 
 from bs4 import BeautifulSoup as soup  # HTML data structure
@@ -155,11 +154,23 @@ def item_to_xml(_json):
 
 
 def parse_prod(job):
-    page_url, html, prod = job['url'], job['data'], job['prod']
+    page_url, html, prod, img_hash = job['url'], job['data'], job['prod'], job['img_hash']
 
     print(page_url)
     page_soup = soup(html, "html.parser")
-    prod_html = page_soup.find("div", {"class": "details-block"}).div.div.div
+    prod_html = page_soup.find("div", {"class": "details-block"})
+
+    if not prod_html:
+        assert(prod['children'] != [])
+        del img_hash[prod['img_hash']]
+
+        new_parent = prod["children"].pop()
+        img_hash[new_parent['img_hash']] = prod['id'] = new_parent['id']
+        prod['link'] = new_parent['link']
+        page_soup = load_page(prod['link'])
+        prod_html = page_soup.find("div", {"class": "details-block"})
+
+    prod_html = prod_html.div.div.div
 
     prod["link"] = page_url
 
@@ -227,7 +238,8 @@ def process_prods(db):
             elif db[prod_id]['state'] != OK:
                 jobs.append({
                     'url': db[prod_id]['link'],
-                    'prod': db[prod_id]
+                    'prod': db[prod_id],
+                    'img_hash': db['img_hash']
                 })
 
     async_get(jobs, parse_prod)
@@ -271,7 +283,8 @@ def new_product(db, img_hash, prod_link, prod_id):
         "availability": "in stock",  # in stock by default
         "condition": "New",  # New condition by default
         "img_hash": img_hash,
-        "state": NEW
+        "state": NEW,
+        "children": []
     }
 
 
@@ -309,13 +322,20 @@ def exec_size(db, job, size=None, comma=False):
         add_size(scraped_sizes, parent_id, size)
         if img_hash not in db['img_hash']:
             new_product(db, img_hash, prod_link, prod_id)
-        elif db[db['img_hash'][img_hash]]['state'] != NEW:
-            parent_id = db['img_hash'][img_hash]
+        else:
+            db[db['img_hash'][img_hash]]["children"].append({
+                "id": prod_id,
+                "img_hash": img_hash,
+                "link": prod_link
+            })
 
-            if arrays_are_equal(scraped_sizes[parent_id], db[parent_id]['size']):
-                db[parent_id]['state'] = OK
-            else:
-                db[parent_id]['state'] = UPDATE
+            if db[db['img_hash'][img_hash]]['state'] != NEW:
+                parent_id = db['img_hash'][img_hash]
+
+                if arrays_are_equal(scraped_sizes[parent_id], db[parent_id]['size']):
+                    db[parent_id]['state'] = OK
+                else:
+                    db[parent_id]['state'] = UPDATE
 
 
 def exec_sub_cat(db, job):
