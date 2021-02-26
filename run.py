@@ -170,11 +170,19 @@ def parse_prod(job):
         page_soup = load_page(prod['link'])
         prod_html = page_soup.find("div", {"class": "details-block"})
 
+    def modify_title(title):
+        for x in ["Armani", "Armani Exchange", "Pierre Cardin"]:
+            title.replace(x, x.upper())
+        title.replace("A|X", "AX")
+        return title
+
     prod_html = prod_html.div.div.div
 
     prod["link"] = page_url
 
     prod["title"] = prod_html.find("li", {"class": "breadcrumb-item active"}).decode_contents()
+
+    prod["title"] = modify_title(prod["title"])
 
     prod["id"] = prod_html.find("div", {"class": "product-id"}).decode_contents()
     prod["id"] = int(re.search(r"\d+", prod["id"]).group())
@@ -317,6 +325,10 @@ def exec_size(db, job, size=None, comma=False):
         prod_link = list_item.find("a", {"class": "prod-item-img"})['href']
         prod_link = re.sub(r"[\n\r]", "", prod_link)
         prod_id = re.search(r"/\d+/", prod_link)[0].replace("/", "")
+        price_div = list_item.find("div", {"class": "price"})
+        sale_price = "0 AMD"
+        if price_div.find("span", {"class": "regular"}):
+            sale_price = price_div.find("span", {"class": "regular"}).decode_contents()
 
         parent_id = prod_id if img_hash not in db['img_hash'] else db['img_hash'][img_hash]
         add_size(scraped_sizes, parent_id, size)
@@ -331,11 +343,12 @@ def exec_size(db, job, size=None, comma=False):
 
             if db[db['img_hash'][img_hash]]['state'] != NEW:
                 parent_id = db['img_hash'][img_hash]
-
+                db[parent_id]['sale_price'] = sale_price
                 if arrays_are_equal(scraped_sizes[parent_id], db[parent_id]['size']):
                     db[parent_id]['state'] = OK
                 else:
                     db[parent_id]['state'] = UPDATE
+
 
 
 def exec_sub_cat(db, job):

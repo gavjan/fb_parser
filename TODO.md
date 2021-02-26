@@ -1,6 +1,6 @@
 - [ ] Fix Pre-orders
-- [ ] Fix Prices Update
-- [ ] Fix A|X
+- [X] Fix Prices Update
+- [X] Fix A|X
 - [X] Fix Parent size being removed
 - [X] Bash Script
 - [X] Fix Sub Category names
