@@ -1,5 +1,6 @@
-- [X] Fix Sizes on phones
+- [ ] Request rejected
 - [ ] Fix Pre-orders
+- [X] Fix Sizes on phones
 - [X] Fix Prices Update
 - [X] Fix A|X
 - [X] Fix Parent size being removed

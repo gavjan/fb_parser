@@ -143,11 +143,11 @@ def item_to_xml(_json):
         del copy["size"]
     else:
         copy["size"] = arr_to_string(copy["size"])
+        copy['description'] += f"\nՉապսեր {copy['size']}"
 
     if copy["price"] == "0 AMD":
         copy["price"] = copy["sale_price"]
         del copy["sale_price"]
-    copy['description'] += f"\nՉապսեր {copy['size']}"
 
     item_xml = json2xml.Json2xml(copy, attr_type=False).to_xml()
     item_xml = re.sub(r'(<\?xml version="1\.0" \?>|</?all>)\n', '', item_xml)
