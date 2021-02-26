@@ -330,18 +330,21 @@ def exec_size(db, job, size=None, comma=False):
         price_div = list_item.find("div", {"class": "price"})
         sale_price = "0 AMD"
         if price_div.find("span", {"class": "regular"}):
-            sale_price = price_div.find("span", {"class": "regular"}).decode_contents()
+            sale_price = price_div.find("span", {"class": "regular"}).decode_contents().strip()
+            sale_price = re.search(r"[0-9,]+", sale_price).group().replace(",", "") + " AMD"
 
         parent_id = prod_id if img_hash not in db['img_hash'] else db['img_hash'][img_hash]
         add_size(scraped_sizes, parent_id, size)
         if img_hash not in db['img_hash']:
             new_product(db, img_hash, prod_link, prod_id)
         else:
-            db[db['img_hash'][img_hash]]["children"].append({
+            child = {
                 "id": prod_id,
                 "img_hash": img_hash,
                 "link": prod_link
-            })
+            }
+            if child not in db[db['img_hash'][img_hash]]["children"]:
+                db[db['img_hash'][img_hash]]["children"].append(child)
 
             if db[db['img_hash'][img_hash]]['state'] != NEW:
                 parent_id = db['img_hash'][img_hash]
