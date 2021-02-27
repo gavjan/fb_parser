@@ -9,6 +9,7 @@ import os
 import sys
 import json
 from async_get import async_get
+from urllib.error import HTTPError
 
 DEBUG = False
 
@@ -100,7 +101,7 @@ def load_html(file_name):
     return soup(file_text[0], "html.parser")
 
 
-def load_page(url):
+def load_page(url, attempt=1):
     def is_ascii(s):
         return all(ord(c) < 128 for c in s)
 
@@ -110,7 +111,13 @@ def load_page(url):
                 url = url.replace(x, quote(x))
 
     req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    web_byte = urlopen(req).read()
+    try:
+        web_byte = urlopen(req).read()
+    except HTTPError as err:
+        if err.code == 503:
+            return load_page(url, attempt + 1) if attempt < 5 else soup("", "html.parser")
+        return soup("", "html.parser")
+
     webpage = web_byte.decode('utf-8')
     page = soup(webpage, "html.parser")
     return page
@@ -156,21 +163,17 @@ def item_to_xml(_json):
 
 
 def parse_prod(job):
-    page_url, html, prod, img_hash = job['url'], job['data'], job['prod'], job['img_hash']
+    page_url, html, prod, img_hash, to_delete = job['url'], job['data'], job['prod'], job['img_hash'], job["to_delete"]
 
     print(page_url)
     page_soup = soup(html, "html.parser")
     prod_html = page_soup.find("div", {"class": "details-block"})
 
     if not prod_html:
-        assert (prod['children'] != [])
         del img_hash[prod['img_hash']]
-
-        new_parent = prod["children"].pop()
-        img_hash[new_parent['img_hash']] = prod['id'] = new_parent['id']
-        prod['link'] = new_parent['link']
-        page_soup = load_page(prod['link'])
-        prod_html = page_soup.find("div", {"class": "details-block"})
+        if prod["id"] not in to_delete:
+            to_delete.append(prod["id"])
+        return
 
     def modify_title(title):
         for x in ["Armani", "Armani Exchange", "Pierre Cardin"]:
@@ -262,18 +265,9 @@ def parse_prod(job):
     prod["fb_product_category"] = fb_category_map[prod["google_product_category"]]
 
 
-def load_links_from_todo():
-    prod_links = []
-    all_prods = load_html("input/todo.html")
-    all_prods = all_prods.find("dl")
-    all_prods = all_prods.find_all("dt")
-    for x in all_prods:
-        prod_links.append(x.a["href"])
-    return prod_links
-
-
 def process_prods(db):
     jobs = []
+    to_delete = []
     for prod_id in list(db):
         if prod_id != "img_hash":
             if db[prod_id]['state'] == DEL:
@@ -282,10 +276,13 @@ def process_prods(db):
                 jobs.append({
                     'url': db[prod_id]['link'],
                     'prod': db[prod_id],
-                    'img_hash': db['img_hash']
+                    'img_hash': db['img_hash'],
+                    'to_delete': to_delete
                 })
 
     async_get(jobs, parse_prod)
+    for x in to_delete:
+        del db[x]
 
 
 def scrape_sizes(link):
@@ -326,8 +323,7 @@ def new_product(db, img_hash, prod_link, prod_id):
         "availability": "in stock",  # in stock by default
         "condition": "New",  # New condition by default
         "img_hash": img_hash,
-        "state": NEW,
-        "children": []
+        "state": NEW
     }
 
 
@@ -370,22 +366,13 @@ def exec_size(db, job, size=None, comma=False):
         add_size(scraped_sizes, parent_id, size)
         if img_hash not in db['img_hash']:
             new_product(db, img_hash, prod_link, prod_id)
-        else:
-            child = {
-                "id": prod_id,
-                "img_hash": img_hash,
-                "link": prod_link
-            }
-            if child not in db[db['img_hash'][img_hash]]["children"]:
-                db[db['img_hash'][img_hash]]["children"].append(child)
-
-            if db[db['img_hash'][img_hash]]['state'] != NEW:
-                parent_id = db['img_hash'][img_hash]
-                db[parent_id]['sale_price'] = sale_price
-                if arrays_are_equal(scraped_sizes[parent_id], db[parent_id]['size']):
-                    db[parent_id]['state'] = OK
-                else:
-                    db[parent_id]['state'] = UPDATE
+        elif db[db['img_hash'][img_hash]]['state'] != NEW:
+            parent_id = db['img_hash'][img_hash]
+            db[parent_id]['sale_price'] = sale_price
+            if arrays_are_equal(scraped_sizes[parent_id], db[parent_id]['size']):
+                db[parent_id]['state'] = OK
+            else:
+                db[parent_id]['state'] = UPDATE
 
 
 def exec_sub_cat(db, job):
@@ -412,9 +399,6 @@ def update_with_website(db):
 
     categories = home.find("div", {"class": "categorylist"}).ul
     categories = categories.find_all("li", {"class": ["swiper-slide", "item menu-element"]})[:-1]
-
-    # TODO: DELETE ME
-    # categories = categories[2:3]
 
     scraped_sizes = {}
     for cat in categories:

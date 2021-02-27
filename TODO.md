@@ -1,5 +1,5 @@
-- [ ] Request rejected
-- [ ] Fix Pre-orders
+- [X] Request rejected
+- [X] Fix Pre-orders
 - [X] Fix Sizes on phones
 - [X] Fix Prices Update
 - [X] Fix A|X
