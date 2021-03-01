@@ -282,7 +282,8 @@ def process_prods(db):
 
     async_get(jobs, parse_prod)
     for x in to_delete:
-        del db[x]
+        if x in db:
+            del db[x]
 
 
 def scrape_sizes(link):
