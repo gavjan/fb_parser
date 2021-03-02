@@ -193,10 +193,12 @@ def parse_prod(job):
     prod["id"] = int(re.search(r"\d+", prod["id"]).group())
 
     brand = prod_html.find("div", {"class": "product-brnd-logo"}).img["src"]
-    brand = re.search(r"[a-zA-Z-&]+\.(svg|png|jpg)", brand)
+    del_len = len("topsale.am/img/brands/")
+    brand = re.search(r"topsale\.am/img/brands/.+", brand)
     if brand:
-        brand = brand.group()
-        prod["brand"] = re.search(r"[a-zA-Z-&]+", brand).group().replace("-", " ")
+        brand = brand.group()[del_len + 20:]
+        brand = re.sub(r"\.(svg|png|jpg|jpeg|jfif|webp)", "", brand)
+        prod["brand"] = brand.replace("-", " ").title()
     else:
         prod["brand"] = "no_brand"
 
