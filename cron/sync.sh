@@ -2,10 +2,12 @@ cd /data/data/com.termux/files/home/fb_parser # [Project Directory]
 
 git pull
 
-if curl https://students.mimuw.edu.pl/\~gc401929/.topsale/signal | grep FLUSH_DB; then
+scp mim:~/public_html/.topsale/signal .
+if cat signal | grep FLUSH_DB; then
   rm .json/db.json;
   ssh mim "rm -f ~/public_html/.topsale/signal"
 fi
+rm signal
 
 if python3 run.py >.log_file 2>.err_file ; then
   mkdir -p ".log/$(date +%d-%m-%Y)"
@@ -25,7 +27,7 @@ else
 
   ssh mim "mkdir -p ~/public_html/.topsale/err/$(date +%d-%m-%Y)"
   cp .err_file ".err/$(date +%d-%m-%Y)/$(date +%H-%M).err"
-  scp .err_file mim:~/public_html/.topsale/err/"$(date +%d-%m-%Y)/$(date +%H-%M).err"
+  sc p.err_file mim:~/public_html/.topsale/err/"$(date +%d-%m-%Y)/$(date +%H-%M).err"
 
   sed -i "s/\"/'/g" .err_file
   curl "https://api.postmarkapp.com/email" \
