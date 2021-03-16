@@ -285,6 +285,7 @@ def process_prods(db):
     async_get(jobs, parse_prod)
     for x in to_delete:
         if x in db:
+            del db['img_hash'][db[x]['img_hash']]
             del db[x]
 
 
