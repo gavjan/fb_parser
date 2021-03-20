@@ -370,6 +370,8 @@ def exec_size(db, job, size=None, comma=False):
         add_size(scraped_sizes, parent_id, size)
         if img_hash not in db['img_hash']:
             new_product(db, img_hash, prod_link, prod_id)
+        elif db['img_hash'][img_hash] not in db:
+            del db['img_hash'][img_hash]
         elif db[db['img_hash'][img_hash]]['state'] != NEW:
             parent_id = db['img_hash'][img_hash]
             db[parent_id]['sale_price'] = sale_price
