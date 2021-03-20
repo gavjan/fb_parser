@@ -369,18 +369,19 @@ def exec_size(db, job, size=None, comma=False):
         parent_id = prod_id if img_hash not in db['img_hash'] else db['img_hash'][img_hash]
 
         if img_hash not in db['img_hash']:
+            add_size(scraped_sizes, parent_id, size)
             new_product(db, img_hash, prod_link, prod_id)
         elif db['img_hash'][img_hash] not in db:
             del db['img_hash'][img_hash]
-            return
         elif db[db['img_hash'][img_hash]]['state'] != NEW:
+            add_size(scraped_sizes, parent_id, size)
             parent_id = db['img_hash'][img_hash]
             db[parent_id]['sale_price'] = sale_price
             if arrays_are_equal(scraped_sizes[parent_id], db[parent_id]['size']):
                 db[parent_id]['state'] = OK
             else:
                 db[parent_id]['state'] = UPDATE
-        add_size(scraped_sizes, parent_id, size)
+
 
 
 def exec_sub_cat(db, job):
