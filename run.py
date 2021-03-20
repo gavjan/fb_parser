@@ -367,11 +367,12 @@ def exec_size(db, job, size=None, comma=False):
             sale_price = re.search(r"[0-9,]+", sale_price).group().replace(",", "") + " AMD"
 
         parent_id = prod_id if img_hash not in db['img_hash'] else db['img_hash'][img_hash]
-        add_size(scraped_sizes, parent_id, size)
+
         if img_hash not in db['img_hash']:
             new_product(db, img_hash, prod_link, prod_id)
         elif db['img_hash'][img_hash] not in db:
             del db['img_hash'][img_hash]
+            return
         elif db[db['img_hash'][img_hash]]['state'] != NEW:
             parent_id = db['img_hash'][img_hash]
             db[parent_id]['sale_price'] = sale_price
@@ -379,6 +380,7 @@ def exec_size(db, job, size=None, comma=False):
                 db[parent_id]['state'] = OK
             else:
                 db[parent_id]['state'] = UPDATE
+        add_size(scraped_sizes, parent_id, size)
 
 
 def exec_sub_cat(db, job):
