@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from bs4 import BeautifulSoup as soup  # HTML data structure
 from urllib.request import Request, urlopen
 from urllib.parse import quote
