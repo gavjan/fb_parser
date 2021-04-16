@@ -337,7 +337,7 @@ def arrays_are_equal(arr1, arr2):
     return arr1 == arr2
 
 
-def exec_size(db, job, size=None, comma=False):
+def exec_size(db, job, size=None, comma=False, attempt=1):
     def add_size(sizes, _prod_id, _size):
         if _prod_id not in sizes:
             sizes[_prod_id] = []
@@ -348,6 +348,9 @@ def exec_size(db, job, size=None, comma=False):
     link = job['link']
     if size is not None:
         link = f"{link}?search=filters&searchData_TAG_{job['tag']}={size.replace(' ', '%20')}"
+
+    if attempt > 5:
+        raise Exception(f"Broken html response from: {link}")
 
     page = load_page(link)
     page = page.find("div", {"class": "row"})
@@ -381,7 +384,6 @@ def exec_size(db, job, size=None, comma=False):
                 db[parent_id]['state'] = OK
             else:
                 db[parent_id]['state'] = UPDATE
-
 
 
 def exec_sub_cat(db, job):
