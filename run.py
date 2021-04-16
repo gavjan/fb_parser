@@ -354,6 +354,8 @@ def exec_size(db, job, size=None, comma=False, attempt=1):
 
     page = load_page(link)
     page = page.find("div", {"class": "row"})
+    if not page:
+        return exec_size(db, job, size, comma, attempt+1)
     list_items = page.find_all("div", {"class": "listitem"})
 
     scraped_sizes = job['scraped_sizes']
