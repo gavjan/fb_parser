@@ -260,7 +260,8 @@ def parse_prod(job):
         "Ժամացույցներ": 316,
         "Գոտիներ": 385,
         "Դրամապանակներ": 150,
-        "Արեւային ակնոցներ": 388
+        "Արեւային ակնոցներ": 388,
+        "Գլխարկներ": 386
     }
     prod["fb_product_category"] = fb_category_map[prod["google_product_category"]]
 
@@ -389,7 +390,7 @@ def exec_size(db, job, size=None, comma=False, attempt=1):
 def exec_sub_cat(db, job):
     dprint("\t", job['sub_category'], end=": ")
 
-    no_size = ["Pens", "Ժամացույցներ", "Դրամապանակներ", "Արեւային ակնոցներ"]
+    no_size = ["Pens", "Ժամացույցներ", "Դրամապանակներ", "Արեւային ակնոցներ", "Գլխարկներ"]
     if job['sub_category'] in no_size:
         exec_size(db, job)
     else:
