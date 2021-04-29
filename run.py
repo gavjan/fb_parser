@@ -175,8 +175,8 @@ def parse_prod(job):
 
     def modify_title(title):
         for x in ["Armani", "Armani Exchange", "Pierre Cardin"]:
-            title.replace(x, x.upper())
-        title.replace("A|X", "AX")
+            title = title.replace(x, x.upper())
+        title = title.replace("A|X", "AX")
         return title
 
     prod_html = prod_html.div.div.div
