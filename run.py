@@ -111,12 +111,8 @@ def load_page(url, attempt=1):
     req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     try:
         web_byte = urlopen(req).read()
-    except HTTPError as err:
-        if err.code == 503:
-            return load_page(url, attempt + 1) if attempt < 5 else soup("", "html.parser")
-        return soup("", "html.parser")
     except:
-        return soup("", "html.parser")
+        return load_page(url, attempt + 1) if attempt < 5 else soup("", "html.parser")
 
     webpage = web_byte.decode('utf-8')
     page = soup(webpage, "html.parser")
@@ -358,7 +354,7 @@ def exec_size(db, job, size=None, comma=False, attempt=1):
     page = load_page(link)
     page = page.find("div", {"class": "row"})
     if not page:
-        return exec_size(db, job, size, comma, attempt+1)
+        return exec_size(db, job, size, comma, attempt + 1)
     list_items = page.find_all("div", {"class": "listitem"})
 
     scraped_sizes = job['scraped_sizes']
