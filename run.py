@@ -7,7 +7,6 @@ import os
 import sys
 import json
 from async_get import async_get
-from urllib.error import HTTPError
 
 DEBUG = False
 
