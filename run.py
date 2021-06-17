@@ -115,6 +115,8 @@ def load_page(url, attempt=1):
         if err.code == 503:
             return load_page(url, attempt + 1) if attempt < 5 else soup("", "html.parser")
         return soup("", "html.parser")
+    except:
+        return soup("", "html.parser")
 
     webpage = web_byte.decode('utf-8')
     page = soup(webpage, "html.parser")
