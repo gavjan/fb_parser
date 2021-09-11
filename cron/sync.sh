@@ -45,6 +45,3 @@ else
 fi
 
 ssh mim "chmod -R 775 ~/public_html/.topsale"
-
-
-
