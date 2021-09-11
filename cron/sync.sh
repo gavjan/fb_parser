@@ -18,6 +18,7 @@ if python3 run.py >.log_file 2>.err_file ; then
     scp .log_file mim:~/public_html/.topsale/log/"$(date +%d-%m-%Y)/$(date +%H-%M).log"
   fi
   scp output/db.xml mim:~/public_html/.topsale
+  scp .json/db.json mim:~/public_html/.topsale
 
 
 else
