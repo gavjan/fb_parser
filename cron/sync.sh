@@ -7,7 +7,7 @@ if cat signal | grep FLUSH_DB; then
   rm .json/db.json;
   ssh mim "rm -f ~/public_html/.topsale/signal"
 fi
-rm signal
+chmod -R 775 ~/public_html/.topsale
 
 if python3 run.py >.log_file 2>.err_file ; then
   mkdir -p ".log/$(date +%d-%m-%Y)"
