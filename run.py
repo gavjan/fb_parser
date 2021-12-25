@@ -288,9 +288,8 @@ def process_prods(db):
     for x in to_delete:
 
         if x in db:
-            img_hash = db[x]['img_hash']
+            del db['img_hash'][db[x]['img_hash']]
             del db[x]
-            db["img_hash"].pop(img_hash, None)
 
 
 def scrape_sizes(link):

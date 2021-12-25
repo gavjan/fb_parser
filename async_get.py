@@ -10,7 +10,7 @@ def fetch(session, job):
     with session.get(job['url']) as response:
         job['data'] = response.text
         if response.status_code != 200:
-            print("FAILURE::{0}".format(job['url']))
+            print(f"FAILURE:{response.status_code}:{job['url']}")
         return job
 
 
