@@ -145,7 +145,7 @@ def item_to_xml(_json):
         del copy["size"]
     else:
         copy["size"] = arr_to_string(copy["size"])
-        copy['description'] += f"\nՉափսեր {copy['size']}"
+        copy['description'] += f"\n\nՉափսեր {copy['size']}"
 
     if copy["price"] == "0 AMD":
         copy["price"] = copy["sale_price"]
