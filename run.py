@@ -8,7 +8,7 @@ import sys
 import json
 from async_get import async_get
 
-DEBUG = False
+DEBUG = True
 
 # Enum states
 DEL = 0
@@ -388,6 +388,8 @@ def exec_size(db, job, size=None, comma=False, attempt=1):
                 db[parent_id]['state'] = OK
             else:
                 db[parent_id]['state'] = UPDATE
+        else:
+            add_size(scraped_sizes, parent_id, size)
 
 
 def exec_sub_cat(db, job):
@@ -446,4 +448,5 @@ def main():
     save_xml(to_xml(db))
 
 
-main()
+if __name__ == "__main__":
+    main()

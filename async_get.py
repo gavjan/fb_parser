@@ -53,4 +53,5 @@ def main():
     async_get(jobs, callback, )
 
 
-# main()
+if __name__ == "__main__":
+    main()
