@@ -8,7 +8,7 @@ import sys
 import json
 from async_get import async_get
 
-DEBUG = True
+DEBUG = False
 
 # Enum states
 DEL = 0
