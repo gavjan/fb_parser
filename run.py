@@ -47,14 +47,6 @@ def dprint(*args, **kwargs):
         print(*args, **kwargs)
 
 
-def err_exit(*args, **kwargs):
-    print("[ERROR] ", end="", file=sys.stderr)
-    print(*args, file=sys.stderr, **kwargs)
-    print("\nPress Enter to exit...", file=sys.stderr)
-    input()
-    exit(1)
-
-
 def print_json(_json, intend="", comma=False, left_bracket=True):
     if isinstance(_json, list):
         print(intend + "[")
@@ -84,18 +76,6 @@ def print_json(_json, intend="", comma=False, left_bracket=True):
             print(f"{intend}\t{colored(green, key)}: {colored(cyan, val)}{val_comma}")
         i += 1
     print(intend + "}" + ("," if comma else ""))
-
-
-def load_html(file_name):
-    if not os.path.exists("input") or not os.path.isfile("input/todo.html"):
-        err_exit("input/todo.html missing")
-    file = open(file_name)
-    file_text = file.read()[11:]
-    file_text = re.findall(r">todo</H3>[\s\S]*", file_text)
-    if not file_text:
-        err_exit("todo.html doesn't contain any product links.")
-    file.close()
-    return soup(file_text[0], "html.parser")
 
 
 def load_page(url, attempt=1):
