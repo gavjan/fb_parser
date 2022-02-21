@@ -24,7 +24,7 @@ def load_json(name):
         data = json.load(f)
         f.close()
     except FileNotFoundError:
-        pass
+        print(f"{name}.json not found. Creating a new one...")
     if "img_hash" not in data:
         data['img_hash'] = {}
     return data
