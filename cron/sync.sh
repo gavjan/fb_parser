@@ -2,6 +2,7 @@ cd /data/data/com.termux/files/home/fb_parser # [Project Directory]
 
 git pull
 
+rm signal
 scp mim:~/public_html/.topsale/signal .
 if cat signal | grep FLUSH_DB; then
   rm .json/db.json;
