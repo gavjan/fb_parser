@@ -253,6 +253,10 @@ def parse_prod(job):
 def process_prods(db):
     jobs = []
     to_delete = []
+    ignore_list = urlopen("https://students.mimuw.edu.pl/~gc401929/.topsale/.ignore.json").read()
+    for x in json.loads(ignore_list):
+        to_delete.append(str(x))
+
     for prod_id in list(db):
         if prod_id != "img_hash":
             if db[prod_id]['state'] == DEL:
