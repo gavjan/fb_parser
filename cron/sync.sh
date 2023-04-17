@@ -9,7 +9,7 @@ if cat signal | grep FLUSH_DB; then
   ssh mim "rm -f ~/public_html/.topsale/signal"
 fi
 
-if python3 run.py >.log_file 2>.err_file ; then
+if python3 -O run.py >.log_file 2>.err_file ; then
   mkdir -p ".log/$(date +%d-%m-%Y)"
 
   if [ -s .log_file ]; then

@@ -8,8 +8,6 @@ import sys
 import json
 from async_get import async_get
 
-DEBUG = False
-
 # Enum states
 DEL = 0
 OK = 1
@@ -43,7 +41,7 @@ def save_json(name, data):
 
 
 def dprint(*args, **kwargs):
-    if DEBUG:
+    if __debug__:
         print(*args, **kwargs)
 
 
